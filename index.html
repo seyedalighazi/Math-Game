@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی ریاضی در جنگل</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-image: url('forest.gif'); /* پس‌زمینه متحرک جنگل */
+            background-size: cover;
+            background-attachment: fixed;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        #game-container {
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        h1, h2, p {
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        #question-section, #report-section, #name-section {
+            display: none;
+        }
+        #progress {
+            margin-top: 20px;
+            font-size: 18px;
+            color: green;
+        }
+        .option-button {
+            display: inline-block;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            background-color: #333; /* رنگ تیره برای گزینه‌ها */
+            color: #fff; /* رنگ متن سفید */
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+        .option-button:hover {
+            background-color: #555; /* رنگ روشن‌تر هنگام هاور */
+        }
+        #questionImage {
+            max-width: 100%;
+            height: auto;
+        }
+        #report-card {
+            text-align: center;
+            font-size: 18px;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            background-color: #fff;
+            position: relative;
+            background-image: url('certificate-bg.png');
+            background-size: cover;
+        }
+        #restart-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #name-section {
+            display: block;
+        }
+        .form-style {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- بخش نام کاربری -->
+    <div id="name-section" class="form-style">
+        <h1>بازی ریاضی در جنگل</h1>
+        <p>لطفاً نام و نام خانوادگی خود را وارد کنید:</p>
+        <input type="text" id="firstName" placeholder="نام">
+        <input type="text" id="lastName" placeholder="نام خانوادگی">
+        <button onclick="startGame()">شروع بازی</button>
+    </div>
+
+    <!-- بخش سوالات -->
+    <div id="question-section">
+        <h2>سوال <span id="question-number">1</span> از 10</h2>
+        <img id="questionImage" src="" alt="سوال ریاضی">
+        <div id="options">
+            <!-- گزینه‌های چهارگزینه‌ای به صورت خودکار تولید می‌شوند -->
+        </div>
+        <button onclick="prevQuestion()">سوال قبلی</button>
+        <div id="progress">شما در حال انجام بازی هستید...</div>
+    </div>
+
+    <!-- بخش کارنامه -->
+    <div id="report-section">
+        <h2>کارنامه‌ی شما</h2>
+        <div id="report-card">
+            <p><span id="userName"></span> عزیز،</p>
+            <p>نتایج بازی شما:</p>
+            <p>تعداد پاسخ‌های درست: <span id="correctCount"></span></p>
+            <p>تعداد پاسخ‌های غلط: <span id="wrongCount"></span></p>
+            <p>تعداد سوالات بدون پاسخ: <span id="unansweredCount"></span></p>
+        </div>
+        <button id="restart-button" onclick="restartGame()">بازی دوباره</button>
+    </div>
+</div>
+
+<audio id="bgMusic" src="background-music.mp3" loop></audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+<script>
+    const questions = [
+        { image: "question1.png", options: [5, 8, 10, 12], answer: 8 },
+        { image: "question2.png", options: [4, 6, 7, 9], answer: 6 },
+        { image: "question3.png", options: [10, 12, 15, 18], answer: 12 },
+        { image: "question4.png", options: [16, 18, 20, 22], answer: 20 },
+        { image: "question5.png", options: [10, 12, 15, 17], answer: 15 },
+        { image: "question6.png", options: [20, 25, 30, 35], answer: 30 },
+        { image: "question7.png", options: [3, 5, 7, 9], answer: 5 },
+        { image: "question8.png", options: [15, 18, 20, 22], answer: 18 },
+        { image: "question9.png", options: [22, 25, 28, 30], answer: 25 },
+        { image: "question10.png", options: [35, 40, 45, 50], answer: 40 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    let userAnswers = Array(questions.length).fill(null);
+
+    function startGame() {
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+
+        if (firstName === '' || lastName === '') {
+            alert('لطفاً نام و نام خانوادگی خود را وارد کنید.');
+            return;
+        }
+
+        document.getElementById('name-section').style.display = 'none';
+        document.getElementById('question-section').style.display = 'block';
+        document.getElementById('bgMusic').play();
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const questionImage = document.getElementById('questionImage');
+        const questionNumber = document.getElementById('question-number');
+        const optionsDiv = document.getElementById('options');
+        
+        const currentQuestion = questions[currentQuestionIndex];
+        questionImage.src = currentQuestion.image;
+        questionNumber.textContent = currentQuestionIndex + 1;
+        
+        optionsDiv.innerHTML = ''; // پاک کردن گزینه‌های قبلی
+        currentQuestion.options.forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'option-button';
+            button.textContent = option;
+            button.onclick = () => {
+                userAnswers[currentQuestionIndex] = option;
+                nextQuestion(); // ثبت پاسخ و رفتن به سوال بعدی
+            };
+            optionsDiv.appendChild(button);
+        });
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            showQuestion();
+        } else {
+            endGame();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion();
+        }
+    }
+
+    function endGame() {
+        document.getElementById('question-section').style.display = 'none';
+        document.getElementById('report-section').style.display = 'block';
+
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        document.getElementById('userName').textContent = `${firstName} ${lastName}`;
+
+        userAnswers.forEach((answer, index) => {
+            if (answer === questions[index].answer) {
+                correctAnswers++;
+            } else if (answer !== null) {
+                wrongAnswers++;
+            }
+        });
+
+        document.getElementById('correctCount').textContent = correctAnswers;
+        document.getElementById('wrongCount').textContent = wrongAnswers;
+        document.getElementById('unansweredCount').textContent = questions.length - correctAnswers - wrongAnswers;
+    }
+
+    function restartGame() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
